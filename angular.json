@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/summer-workshop-angular",
+            "outputPath": "dist/5DS3-G1-devopsAngular",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": [
