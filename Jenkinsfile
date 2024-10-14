@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'chaimagharbi-5ds3-g1-devopsangular'
-        DOCKER_HUB_REPO = 'chayma24/5ds3-g1-devopsspring 
+        DOCKER_HUB_REPO = 'chayma24/5ds3-g1-devopsspring' 
         DOCKER_CREDENTIALS_ID = 'docker_id'
     }
 
