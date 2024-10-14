@@ -44,10 +44,10 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'ayana666#', usernameVariable: 'chayma24')]) {
-    sh 'docker login -u chayma24 -p ayana666'
-
-                    sh "docker tag ${DOCKER_IMAGE} ${DOCKER_HUB_REPO}:latestAngular"
-                    sh "docker push ${DOCKER_HUB_REPO}:latestAngular"
+                        sh 'docker login -u chayma24 -p ayana666#'
+                        sh "docker tag ${DOCKER_IMAGE} ${DOCKER_HUB_REPO}:latestAngular"
+                        sh "docker push ${DOCKER_HUB_REPO}:latestAngular"
+                    }
                 }
             }
         }
@@ -61,5 +61,5 @@ pipeline {
             echo 'Build failed. Check the logs for errors.'
         }
     }
-    }
 }
+
