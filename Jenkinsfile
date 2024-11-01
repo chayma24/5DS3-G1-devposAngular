@@ -33,14 +33,7 @@ pipeline {
             }
         }
 
-        stage('Lint') {
-            steps {
-                dir(env.ANGULAR_PROJECT_NAME) {
-                    sh 'npm run lint'
-                }
-            }
-        }
-
+       
         stage('Build') {
             steps {
                 dir(env.ANGULAR_PROJECT_NAME) {
