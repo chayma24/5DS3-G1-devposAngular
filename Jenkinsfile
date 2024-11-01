@@ -2,51 +2,90 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS' 
+        nodejs 'NODE_HOME' 
     }
 
     environment {
-        DOCKER_IMAGE = 'chaimagharbi-5ds3-g1-devopsangular'
-        DOCKER_HUB_REPO = 'chayma24/5ds3-g1-devopsspring' 
-        DOCKER_CREDENTIALS_ID = 'docker_id'
+        SONAR_TOKEN = 'sonarcloud_token'
+        DOCKER_CONFIG_SECRET = 'docker_id'
+        DOCKER_IMAGE_NAME = 'chayma24/5ds3-g1-devopsangular'
+        GITHUB_REPO_URL = 'https://github.com/chayma24/5DS3-G1-devopsAngular.git'
+        GIT_BRANCH = 'ChaimaGharbi-5DS3-G1'
+        ANGULAR_PROJECT_NAME = '5DS3-G1-devopsAngular'
     }
 
     stages {
         stage('Clone') {
             steps {
-                git url: 'https://github.com/chayma24/5DS3-G1-devposAngular.git', 
-                branch: 'ChaimaGharbi-5DS3-G1',
-                credentialsId: 'jenkins_token_backend'
+                git url: "${env.GITHUB_REPO_URL}",
+                    branch: "${env.GIT_BRANCH}",
+                    credentialsId: 'jenkins_token_backend'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
-            }
-        }
-
-        stage('Build Angular Project') {
-            steps {
-                sh 'npm run build --prod'
-            }
-        }
-
-        stage('Create Docker Image') {
-            steps {
-                script {
-                    sh "docker build -t ${DOCKER_IMAGE} ."
+                dir(env.ANGULAR_PROJECT_NAME) {
+                    sh 'npm install'
                 }
             }
         }
 
-        stage('Push Docker Image to DockerHub')  {
+        stage('Lint') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'docker_id', passwordVariable: 'ayana666#', usernameVariable: 'chayma24')]) {
-                        sh 'docker login -u chayma24 -p ayana666#'
-                        sh "docker tag ${DOCKER_IMAGE} ${DOCKER_HUB_REPO}:latestAngular"
-                        sh "docker push ${DOCKER_HUB_REPO}:latestAngular"
+                dir(env.ANGULAR_PROJECT_NAME) {
+                    sh 'npm run lint'
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir(env.ANGULAR_PROJECT_NAME) {
+                    sh 'npm run build --prod' 
+                }
+            }
+        }
+
+        stage('SonarCloud Analysis') {
+            steps {
+                withCredentials([string(credentialsId: env.SONAR_TOKEN, variable: 'SONAR_TOKEN')]) {
+                    dir(env.ANGULAR_PROJECT_NAME) {
+                        sh '''
+                        npx sonar-scanner \
+                            -Dsonar.projectKey=chayma24 \
+                            -Dsonar.organization=chayma24 \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=https://sonarcloud.io \
+                            -Dsonar.login=$SONAR_TOKEN
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                dir("${env.ANGULAR_PROJECT_NAME}/dist") {
+                    archiveArtifacts artifacts: '**', fingerprint: true
+                }
+            }
+        }
+
+        stage('Build and Push Docker Image') {
+            steps {
+                dir(env.ANGULAR_PROJECT_NAME) {
+                    script {
+                        def imageTag = "${env.DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+
+                        // Build the Docker image
+                        docker.build(imageTag, "--build-arg ANGULAR_DIST_DIR=dist/${env.ANGULAR_PROJECT_NAME} .")
+
+                        // Log in and push the Docker image
+                        withCredentials([usernamePassword(credentialsId: env.DOCKER_CONFIG_SECRET, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            sh 'echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin'
+                            docker.image(imageTag).push()
+                        }
                     }
                 }
             }
@@ -55,11 +94,15 @@ pipeline {
 
     post {
         success {
-            echo 'Angular project built and Docker image pushed to DockerHub successfully!'
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo 'Build failed. Check the logs for errors.'
+            echo 'Pipeline failed.'
+        }
+        always {
+            cleanWs() 
         }
     }
 }
+
 
