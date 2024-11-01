@@ -11,7 +11,7 @@ pipeline {
         DOCKER_IMAGE_NAME = 'chayma24/5ds3-g1-devopsangular'
         GITHUB_REPO_URL = 'https://github.com/chayma24/5DS3-G1-devposAngular.git'
         GIT_BRANCH = 'ChaimaGharbi-5DS3-G1'
-        ANGULAR_PROJECT_NAME = '5DS3-G1-devopsAngular'
+        ANGULAR_PROJECT_NAME = '5DS3-G1-devposAngular'
     }
 
     stages {
