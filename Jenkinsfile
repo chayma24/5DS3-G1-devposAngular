@@ -14,6 +14,8 @@ pipeline {
         ANGULAR_PROJECT_NAME = '5DS3-G1-devposAngular'
     }
 
+
+
     stages {
         stage('Clone') {
             steps {
