@@ -29,6 +29,7 @@ pipeline {
             steps {
                 dir(env.ANGULAR_PROJECT_NAME) {
                     sh 'npm install'
+                    sh 'npm install sonar-scanner'
                 }
             }
         }
