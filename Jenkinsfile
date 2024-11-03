@@ -43,22 +43,7 @@ pipeline {
             }
         }
 
-        stage('SonarCloud Analysis') {
-            steps {
-                withCredentials([string(credentialsId: env.SONAR_TOKEN, variable: 'SONAR_TOKEN')]) {
-                    dir(env.ANGULAR_PROJECT_NAME) {
-                        sh '''
-                        npx sonar-scanner \
-                            -Dsonar.projectKey=chayma24 \
-                            -Dsonar.organization=chayma24 \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=https://sonarcloud.io \
-                            -Dsonar.login=$SONAR_TOKEN
-                        '''
-                    }
-                }
-            }
-        }
+       
 
         stage('Archive Artifacts') {
             steps {
